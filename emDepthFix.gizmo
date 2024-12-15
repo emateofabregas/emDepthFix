@@ -1,13 +1,11 @@
 Gizmo {
 name emDepthFix
 knobChanged "import nuke\n\nn = nuke.thisNode()\nk = nuke.thisKnob()\n\nif k.name() == \"fix_internal_edges\":\n    if n\['fix_internal_edges'].value() == True:\n        n.knobs()\['size'].setEnabled(True)\n    else:\n        n.knobs()\['size'].setEnabled(False)\n    \nif k.name() == \"fix_external_edges\":\n    if n\['fix_external_edges'].value() == True:\n        n.knobs()\['scale'].setEnabled(True)\n    else:\n        n.knobs()\['scale'].setEnabled(False)"
-tile_color 0xf78e38ff
 addUserKnob {20 User l emDepthFix t "Gizmo for use in case you have artifacts in your CG renders when you add depth of field. Add this node before your Zdefocus/Bokeh nodes."}
 addUserKnob {6 view_new_depth l "View New Depth" t "If you checkbox this knob, you have to reduce the f-stop if your viewer sees the changes." +STARTLINE}
 addUserKnob {26 ""}
 addUserKnob {6 fix_internal_edges l "Fix Internal Edges" t "It makes the external edges smoother in your CG render in ZDepth channel. Ideally, use it for the character renders." +STARTLINE}
-fix_internal_edges true
-addUserKnob {41 size t "Most of the time you shouldn't adjust this knob, only when you have seen some black values on the edge when you exposure down the ZDepth channel. Play between -1 and -5." T Dilate.size}
+addUserKnob {41 size t "Most of the time you shouldn't adjust this knob, only when you have seen some black values on the edge when you exposure down the ZDepth channel. Play between -1 and -5." +DISABLED T Dilate.size}
 addUserKnob {26 gap02 l " " T " "}
 addUserKnob {6 fix_external_edges l "Fix External Edges" t "It makes the internal edges smoother in your CG render in ZDepth channel. Ideally, use it for background renders when you have different terms on it (FG/MG/BG)." +STARTLINE}
 addUserKnob {41 scale +DISABLED T Normalize_depth.scale}
@@ -29,12 +27,13 @@ name Dot1
 xpos 669
 ypos -251
 }
-set Nf39be400 [stack 0]
+set N46521000 [stack 0]
 Expression {
 expr3 a>0?a/a:a
 name UnPremult_Alpha
 xpos 499
 ypos -254
+disable {{!parent.fix_internal_edges}}
 }
 Dilate {
 channels alpha
@@ -42,7 +41,7 @@ size -1
 name Dilate
 xpos 499
 ypos -214
-disable {{"fix_mode == 1 ? 0:1"}}
+disable {{!parent.fix_internal_edges}}
 }
 Shuffle {
 in depth
@@ -60,7 +59,7 @@ xpos 499
 ypos -116
 disable {{!parent.fix_internal_edges}}
 }
-set Nf39bfc00 [stack 0]
+set N4651b000 [stack 0]
 Expression {
 channel3 rgba
 expr3 scale/r
@@ -79,7 +78,7 @@ xpos 356
 ypos -81
 disable {{!fix_external_edges}}
 }
-push $Nf39bfc00
+push $N4651b000
 ShuffleCopy {
 inputs 2
 in alpha
@@ -95,9 +94,9 @@ xpos 499
 ypos -33
 disable {{!fix_external_edges}}
 }
-set Nf39ed000 [stack 0]
-push $Nf39ed000
-push $Nf39be400
+set N4651c400 [stack 0]
+push $N4651c400
+push $N46521000
 Copy {
 inputs 2
 from0 rgba.red
@@ -111,6 +110,7 @@ inputs 2
 which {{parent.view_new_depth}}
 name View_Depth
 label "\[value which]"
+selected true
 xpos 639
 ypos 9
 }
