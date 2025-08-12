@@ -1,20 +1,18 @@
 Group {
  name emDepthFix
- knobChanged "import nuke\n\nn = nuke.thisNode()\nk = nuke.thisKnob()\n\nif k.name() == \"fix_internal_edges\":\n    if n\['fix_internal_edges'].value() == True:\n        n.knobs()\['scale'].setEnabled(True)\n    else:\n        n.knobs()\['scale'].setEnabled(False)\n    \nif k.name() == \"fix_external_edges\":\n    if n\['fix_external_edges'].value() == True:\n        n.knobs()\['size'].setEnabled(True)\n    else:\n        n.knobs()\['size'].setEnabled(False)"
+ knobChanged "import nuke\n\nn = nuke.thisNode()\nk = nuke.thisKnob()\n\nif k.name() == \"fix_internal_edges\":\n    if n\['fix_internal_edges'].value() == True:\n        n.knobs()\['scale'].setEnabled(True)\n    else:\n        n.knobs()\['scale'].setEnabled(False)\n    \nif k.name() == \"fix_external_edges\":\n    if n\['fix_external_edges'].value() == True:\n        n.knobs()\['fix_internal_edges'].setEnabled(True)\n    else:\n        n.knobs()\['fix_internal_edges'].setEnabled(False)\n        n.knobs()\['fix_internal_edges'].setValue(False)"
  addUserKnob {20 User l emDepthFix t "Gizmo for use in case you have artifacts in your CG renders when you add depth of field. Add this node before your Zdefocus/Bokeh nodes."}
  addUserKnob {6 view_new_depth l "View New Depth" t "If you checkbox this knob, you have to reduce the f-stop if your viewer sees the changes." +STARTLINE}
+ view_new_depth true
+ addUserKnob {41 in l AOV t "Set up your ZDepth channel here if you have a different name for your depth channel." T Input_depth.in}
  addUserKnob {26 ""}
  addUserKnob {6 fix_external_edges l "Fix External Edges" t "It makes the external edges smoother in your CG render in ZDepth channel. Ideally, use it for the character and background renders with edges." +STARTLINE}
- fix_external_edges true
- addUserKnob {41 size t "Most of the time you shouldn't adjust this knob, only when you have seen some black values on the edge when you exposure down the ZDepth channel. Play between -1 and -5." T Dilate.size}
  addUserKnob {26 gap02 l " " T " "}
- addUserKnob {6 fix_internal_edges l "Fix Internal Edges" t "It makes the internal edges smoother in your CG render in ZDepth channel. Ideally, use it for background renders when you have different terms on it (FG/MG/BG)." +STARTLINE}
+ addUserKnob {6 fix_internal_edges l "Fix Internal Edges" t "It makes the internal edges smoother in your CG render in ZDepth channel. Ideally, use it for background renders when you have different terms on it (FG/MG/BG)." +DISABLED +STARTLINE}
  addUserKnob {41 scale +DISABLED T Normalize_depth.scale}
  addUserKnob {26 gap03 l " " T " "}
  addUserKnob {26 ""}
  addUserKnob {26 autor l "" +STARTLINE T "<font color=\"grey\">emDepthFix v1.4 | emateofabregas.com | 2024-2025</font>"}
- addUserKnob {20 tab_inputs l "Input AOVS" t "Set up your ZDepth channel here."}
- addUserKnob {41 in l ZDepth t "Set up your ZDepth channel here if you have a different name for your depth channel." T Input_depth.in}
 }
  Input {
   inputs 0
@@ -28,46 +26,31 @@ Group {
   xpos 669
   ypos -251
  }
-set N3c1d1000 [stack 0]
- Expression {
-  expr3 a>0?a/a:a
-  name UnPremult_Alpha
-  xpos 499
-  ypos -254
-  disable {{!parent.fix_external_edges}}
- }
+set Nb3e10400 [stack 0]
  Shuffle {
   in depth
   in2 rgba
   alpha alpha2
   name Input_depth
   xpos 499
-  ypos -214
+  ypos -254
  }
- Dilate {
-  channels rgba
-  size -1
-  name Dilate
+ EdgeExtend {
+  detailAmount 0
+  premultiply false
+  name EdgeExtend1
   xpos 499
   ypos -183
   disable {{!parent.fix_external_edges}}
  }
- Inpaint2 {
-  fillRegion "Source Inverted Alpha"
-  center {1024 778}
-  name Inpaint
-  xpos 499
-  ypos -116
-  disable {{!parent.fix_external_edges}}
- }
-set N363aa000 [stack 0]
+set Nb95e7200 [stack 0]
  Expression {
   channel3 rgba
   expr3 scale/r
   name Normalize_depth
   label "\[knob expr3]"
   xpos 356
-  ypos -122
+  ypos -189
   disable {{!parent.fix_internal_edges}}
   addUserKnob {20 User}
   addUserKnob {7 scale t "The value of this knob depends on the size of your scene. Ideally, if you're render is small, you should play between 0-100, if it's in real scale, you have to play between 100-1000. The idea is you can jump between the preview of the new depth and check how it looks the new render with this node." R 1 1000}
@@ -76,28 +59,36 @@ set N363aa000 [stack 0]
  EdgeDetectWrapper {
   name EdgeDetect1
   xpos 356
-  ypos -81
+  ypos -115
   disable {{!parent.fix_internal_edges}}
  }
-push $N363aa000
+push $Nb95e7200
  ShuffleCopy {
   inputs 2
   in alpha
   name ShuffleCopyAlpha
   xpos 499
-  ypos -75
+  ypos -109
   disable {{!parent.fix_internal_edges}}
+ }
+ EdgeExtend {
+  detailAmount 0
+  premultiply false
+  name EdgeExtend2
+  xpos 499
+  ypos -69
+  disable true
  }
  Inpaint2 {
-  center {1024 778}
+  center {1024 576}
   name Inpaint1
   xpos 499
-  ypos -33
+  ypos -19
   disable {{!parent.fix_internal_edges}}
  }
-set N363ab400 [stack 0]
-push $N363ab400
-push $N3c1d1000
+set N4ab0f00 [stack 0]
+push $N4ab0f00
+push $Nb3e10400
  Copy {
   inputs 2
   from0 rgba.red
@@ -118,5 +109,14 @@ push $N3c1d1000
   name Output1
   xpos 639
   ypos 58
+ }
+push $N4ab0f00
+ Viewer {
+  frame_range 1-100
+  gain 0.000690533966
+  monitorOutNDISenderName "NukeX - CG_Template_v003 - Viewer1"
+  name Viewer1
+  xpos 345
+  ypos -2
  }
 end_group
