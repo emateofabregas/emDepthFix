@@ -3,12 +3,12 @@ Group {
  knobChanged "import nuke\n\nn = nuke.thisNode()\nk = nuke.thisKnob()\n\nif k.name() == \"fix_internal_edges\":\n    if n\['fix_internal_edges'].value() == True:\n        n.knobs()\['scale'].setEnabled(True)\n    else:\n        n.knobs()\['scale'].setEnabled(False)\n    \nif k.name() == \"fix_external_edges\":\n    if n\['fix_external_edges'].value() == True:\n        n.knobs()\['fix_internal_edges'].setEnabled(True)\n    else:\n        n.knobs()\['fix_internal_edges'].setEnabled(False)\n        n.knobs()\['fix_internal_edges'].setValue(False)"
  addUserKnob {20 User l emDepthFix t "Gizmo for use in case you have artifacts in your CG renders when you add depth of field. Add this node before your Zdefocus/Bokeh nodes."}
  addUserKnob {6 view_new_depth l "View New Depth" t "If you checkbox this knob, you have to reduce the f-stop if your viewer sees the changes." +STARTLINE}
- view_new_depth true
  addUserKnob {41 in l AOV t "Set up your ZDepth channel here if you have a different name for your depth channel." T Input_depth.in}
  addUserKnob {26 ""}
  addUserKnob {6 fix_external_edges l "Fix External Edges" t "It makes the external edges smoother in your CG render in ZDepth channel. Ideally, use it for the character and background renders with edges." +STARTLINE}
+ fix_external_edges true
  addUserKnob {26 gap02 l " " T " "}
- addUserKnob {6 fix_internal_edges l "Fix Internal Edges" t "It makes the internal edges smoother in your CG render in ZDepth channel. Ideally, use it for background renders when you have different terms on it (FG/MG/BG)." +DISABLED +STARTLINE}
+ addUserKnob {6 fix_internal_edges l "Fix Internal Edges" t "It makes the internal edges smoother in your CG render in ZDepth channel. Ideally, use it for background renders when you have different terms on it (FG/MG/BG)." +STARTLINE}
  addUserKnob {41 scale +DISABLED T Normalize_depth.scale}
  addUserKnob {26 gap03 l " " T " "}
  addUserKnob {26 ""}
@@ -26,7 +26,7 @@ Group {
   xpos 669
   ypos -251
  }
-set Nb3e10400 [stack 0]
+set Nb3e11800 [stack 0]
  Shuffle {
   in depth
   in2 rgba
@@ -43,7 +43,7 @@ set Nb3e10400 [stack 0]
   ypos -183
   disable {{!parent.fix_external_edges}}
  }
-set Nb95e7200 [stack 0]
+set N4b07900 [stack 0]
  Expression {
   channel3 rgba
   expr3 scale/r
@@ -62,7 +62,7 @@ set Nb95e7200 [stack 0]
   ypos -115
   disable {{!parent.fix_internal_edges}}
  }
-push $Nb95e7200
+push $N4b07900
  ShuffleCopy {
   inputs 2
   in alpha
@@ -71,52 +71,35 @@ push $Nb95e7200
   ypos -109
   disable {{!parent.fix_internal_edges}}
  }
- EdgeExtend {
-  detailAmount 0
-  premultiply false
-  name EdgeExtend2
-  xpos 499
-  ypos -69
-  disable true
- }
  Inpaint2 {
   center {1024 576}
   name Inpaint1
   xpos 499
-  ypos -19
+  ypos -3
   disable {{!parent.fix_internal_edges}}
  }
-set N4ab0f00 [stack 0]
-push $N4ab0f00
-push $Nb3e10400
+set N4b09200 [stack 0]
+push $N4b09200
+push $Nb3e11800
  Copy {
   inputs 2
   from0 rgba.red
   to0 depth.Z
   name Copy_NewDepth
-  xpos 639
-  ypos -39
+  xpos 635
+  ypos -9
  }
  Switch {
   inputs 2
   which {{parent.view_new_depth}}
   name View_Depth
   label "\[value which]"
-  xpos 639
-  ypos 9
+  xpos 635
+  ypos 39
  }
  Output {
   name Output1
-  xpos 639
-  ypos 58
- }
-push $N4ab0f00
- Viewer {
-  frame_range 1-100
-  gain 0.000690533966
-  monitorOutNDISenderName "NukeX - CG_Template_v003 - Viewer1"
-  name Viewer1
-  xpos 345
-  ypos -2
+  xpos 635
+  ypos 88
  }
 end_group
