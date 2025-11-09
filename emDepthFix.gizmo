@@ -12,7 +12,7 @@ Group {
  addUserKnob {41 scale +DISABLED T Normalize_depth.scale}
  addUserKnob {26 gap03 l " " T " "}
  addUserKnob {26 ""}
- addUserKnob {26 autor l "" +STARTLINE T "<font color=\"grey\">emDepthFix v1.4 | emateofabregas.com | 2024-2025</font>"}
+ addUserKnob {26 autor l "" +STARTLINE T "<font color=\"grey\">emDepthFix v1.4 | emateofabregas | 2024-2025</font>"}
 }
  Input {
   inputs 0
